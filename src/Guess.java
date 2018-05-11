@@ -1,6 +1,6 @@
 public class Guess
 {
-  private Position position;
+  Position position;
 
   /**
    * 
@@ -14,50 +14,31 @@ public class Guess
     
     // no need to save the potential directions before 
 
-    if (position.orientation == OrientationEnum.HORIZONTAL)
+    if (position.orientation == Orientation.HORIZONTAL)
     {
       potentialDirections[position.row][position.column].clearAllExceptRight();
       finalDirections[position.row][position.column] = '>';
-      potentialDirections[position.getSecondRow()][position.getSecondColumn()].clearAllExceptLeft();
-      finalDirections[position.getSecondRow()][position.getSecondColumn()]  = '<';
+      potentialDirections[position.secondRow()][position.secondColumn()].clearAllExceptLeft();
+      finalDirections[position.secondRow()][position.secondColumn()]  = '<';
     }
-    else if (position.orientation == OrientationEnum.VERTICAL)
+    else if (position.orientation == Orientation.VERTICAL)
     {
       potentialDirections[position.row][position.column].clearAllExceptDown();
       finalDirections[position.row][position.column] = 'V';
-      potentialDirections[position.getSecondRow()][position.getSecondColumn()].clearAllExceptUp();
-      finalDirections[position.getSecondRow()][position.getSecondColumn()]  = '^';
+      potentialDirections[position.secondRow()][position.secondColumn()].clearAllExceptUp();
+      finalDirections[position.secondRow()][position.secondColumn()]  = '^';
     }
   }
 
-  /**
-   * 
-   * @param potentialDirections the old/original
-   */
-  public void markGuessImpossible(PotentialDirections[][] potentialDirections)
-  {
-    try
-    {
-      if (position.orientation == OrientationEnum.HORIZONTAL)
-      {
-        potentialDirections[position.row][position.column].clearRight();
-        potentialDirections[position.getSecondRow()][position.getSecondColumn()].clearLeft();
-      }
-      else if (position.orientation == OrientationEnum.VERTICAL)
-      {
-        potentialDirections[position.row][position.column].clearDown();
-        potentialDirections[position.getSecondRow()][position.getSecondColumn()].clearUp();
-      }
-    }
-    catch (UnsolvableException ex)
-    {
-      System.out.println("This shouldn't happen, when we mark a guess as impossible there can't be zero directions left in this location");
-    }
-  }
   
   @Override public String toString()
   {
     return position.toString();
   }
+
+
+public Position getPosition() {
+	return position;
+}
 
 }

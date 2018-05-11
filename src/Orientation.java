@@ -1,5 +1,5 @@
 
-public enum OrientationEnum
+public enum Orientation
 {
   HORIZONTAL, VERTICAL;
 }
