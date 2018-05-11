@@ -29,6 +29,15 @@ public class PotentialDirections implements Cloneable
     return ret;
   }
   
+  
+  public static void printPotentialDirections(PotentialDirections[][] potentialDirections)
+  {
+    for (int i = 0; i < potentialDirections.length; i++)
+    {
+      System.out.println(printLine(potentialDirections[i]));
+    }
+  }  
+  
   public static String printLine(PotentialDirections[] line)
   {
     String ret = "";
@@ -40,14 +49,35 @@ public class PotentialDirections implements Cloneable
     return ret;
   }
   
+ 
+  public static void printFinalDirections(char[][] finalDirections)
+  {
+    for (int i = 0; i < finalDirections.length; i++)
+    {
+      for (int j = 0; j < finalDirections[i].length; j++)
+      {
+          char c = finalDirections[i][j];
+        if (c != 'V' && c != '^' && c != '<' && c != '>')
+        {
+          System.out.print('?');
+        }
+        else
+        {
+          System.out.print(c);
+        }
+      }
+    }
+
+  }  
+  
   public static void initialize(PotentialDirections[][] matrix)
   {
-    for (int i = 0; i < matrix.length; i++)
+    for (int r = 0; r < matrix.length; r++)
     {
-      PotentialDirections[] line = matrix[i];
-      for (int j = 0; j < line.length; j++)
+      PotentialDirections[] line = matrix[r];
+      for (int c = 0; c < line.length; c++)
       {
-        line[j] = new PotentialDirections();
+        line[c] = new PotentialDirections();
       }
       
     }

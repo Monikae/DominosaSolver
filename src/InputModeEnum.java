@@ -1,5 +1,5 @@
 
-public enum InputMode
+public enum InputModeEnum
 {
   DEFAULT, SPACES, LETTERS, ZEROES;
 }

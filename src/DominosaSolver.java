@@ -8,7 +8,7 @@ public class DominosaSolver
 {
   static int numColumns, numRows, highestNumber;
 
-  static int[][] lines;
+  static int[][] numbersOnBoard;
 
   /**
    * @param args
@@ -25,7 +25,7 @@ public class DominosaSolver
     DominosaSolver.numColumns = numColumnsTest;
     DominosaSolver.numRows = numRowsTest;
     DominosaSolver.highestNumber = highestNumberTest;
-    DominosaSolver.lines = linesTest;
+    DominosaSolver.numbersOnBoard = linesTest;
 
     processInput();
   }
@@ -65,10 +65,10 @@ public class DominosaSolver
       System.out.println("but there are " + numberOfTilesForGivenHighestNumber + " different tiles with the numbers from 0 to " + highestNumber);
     }
 
-    InputMode inputMode = InputMode.DEFAULT;
+    InputModeEnum inputMode = InputModeEnum.DEFAULT;
     if (highestNumber <= 9)
     {
-      inputMode = InputMode.DEFAULT; // default: no spaces, no letters to substitute for numbers, no leading zeroes
+      inputMode = InputModeEnum.DEFAULT; // default: no spaces, no letters to substitute for numbers, no leading zeroes
     }
     else
     {
@@ -77,15 +77,15 @@ public class DominosaSolver
       String spacesOrLetters = input.next();
       if ("s".equals(spacesOrLetters))
       {
-        inputMode = InputMode.SPACES;
+        inputMode = InputModeEnum.SPACES;
       }
       else if ("l".equals(spacesOrLetters))
       {
-        inputMode = InputMode.LETTERS;
+        inputMode = InputModeEnum.LETTERS;
       }
       else if ("0".equals(spacesOrLetters))
       {
-        inputMode = InputMode.ZEROES;
+        inputMode = InputModeEnum.ZEROES;
       }
       else
       {
@@ -98,7 +98,7 @@ public class DominosaSolver
     for (int i = 0; i < inputLines.length; i++)
     {
       System.out.print("Enter line " + (i + 1) + " > ");
-      if (inputMode == InputMode.SPACES)
+      if (inputMode == InputModeEnum.SPACES)
       {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         inputLines[i] = br.readLine();
@@ -109,15 +109,15 @@ public class DominosaSolver
       }
     }
 
-    lines = new int[numRows][numColumns];
-    for (int i = 0; i < lines.length; i++)
+    numbersOnBoard = new int[numRows][numColumns];
+    for (int i = 0; i < numbersOnBoard.length; i++)
     {
-      lines[i] = parse(inputLines[i], inputMode, numColumns);
+      numbersOnBoard[i] = parse(inputLines[i], inputMode, numColumns);
     }
 
     for (int i = 0; i < inputLines.length; i++)
     {
-      System.out.println(print(lines[i], false));
+      System.out.println(print(numbersOnBoard[i], false));
     }
 
   }
@@ -141,7 +141,7 @@ public class DominosaSolver
       potentialDirections[i][numColumns - 1].right = false;
     }
 
-    printPotentialDirections(potentialDirections);
+    PotentialDirections.printPotentialDirections(potentialDirections);
 
     PositionList[][] potentialPositionsForTiles = new PositionList[highestNumber + 1][highestNumber + 1];
 
@@ -154,12 +154,12 @@ public class DominosaSolver
     }
 
     // initialize horizontal tiles
-    for (int i = 0; i < lines.length; i++) // all lines/rows
+    for (int i = 0; i < numbersOnBoard.length; i++) // all lines/rows
     {
-      for (int j = 0; j < lines[i].length - 1; j++) // all columns except the last one
+      for (int j = 0; j < numbersOnBoard[i].length - 1; j++) // all columns except the last one
       {
-        int numberOnLeftTile = lines[i][j];
-        int numberOnRightTile = lines[i][j + 1];
+        int numberOnLeftTile = numbersOnBoard[i][j];
+        int numberOnRightTile = numbersOnBoard[i][j + 1];
         if (numberOnLeftTile <= numberOnRightTile) potentialPositionsForTiles[numberOnLeftTile][numberOnRightTile].add(new Position(i, j,
             OrientationEnum.HORIZONTAL));
         else potentialPositionsForTiles[numberOnRightTile][numberOnLeftTile].add(new Position(i, j, OrientationEnum.HORIZONTAL));
@@ -167,12 +167,12 @@ public class DominosaSolver
     }
 
     // initialize vertical tiles
-    for (int i = 0; i < lines.length - 1; i++) // all lines/rows except the last one
+    for (int i = 0; i < numbersOnBoard.length - 1; i++) // all lines/rows except the last one
     {
-      for (int j = 0; j < lines[i].length; j++) // all columns 
+      for (int j = 0; j < numbersOnBoard[i].length; j++) // all columns 
       {
-        int numberOnTopTile = lines[i][j];
-        int numberOnBottomTile = lines[i + 1][j];
+        int numberOnTopTile = numbersOnBoard[i][j];
+        int numberOnBottomTile = numbersOnBoard[i + 1][j];
         if (numberOnTopTile <= numberOnBottomTile) potentialPositionsForTiles[numberOnTopTile][numberOnBottomTile].add(new Position(i, j,
             OrientationEnum.VERTICAL));
         else potentialPositionsForTiles[numberOnBottomTile][numberOnTopTile].add(new Position(i, j, OrientationEnum.VERTICAL));
@@ -197,9 +197,9 @@ public class DominosaSolver
     }
 
     System.out.println("End - potential directions:");
-    printPotentialDirections(potentialDirections);
+    PotentialDirections.printPotentialDirections(potentialDirections);
     System.out.println("End - final directions:");
-    printFinalDirections(finalDirections);
+    PotentialDirections.printFinalDirections(finalDirections);
   }
 
   /**
@@ -239,35 +239,35 @@ public class DominosaSolver
                 if (valid(row - 1, col))
                 {
                   potentialDirections[row - 1][col].clearDown();
-                  removeVerticalTile(lines, potentialPositionsForTiles, row - 1, col);
+                  removeVerticalTile(numbersOnBoard, potentialPositionsForTiles, row - 1, col);
                 }
                 if (valid(row - 1, col + 1))
                 {
                   potentialDirections[row - 1][col + 1].clearDown();
-                  removeVerticalTile(lines, potentialPositionsForTiles, row - 1, col + 1);
+                  removeVerticalTile(numbersOnBoard, potentialPositionsForTiles, row - 1, col + 1);
                 }
                 // squares below (if they exist)
                 if (valid(row + 1, col))
                 {
                   potentialDirections[row + 1][col].clearUp();
-                  removeVerticalTile(lines, potentialPositionsForTiles, row, col);
+                  removeVerticalTile(numbersOnBoard, potentialPositionsForTiles, row, col);
                 }
                 if (valid(row + 1, col + 1))
                 {
                   potentialDirections[row + 1][col + 1].clearUp();
-                  removeVerticalTile(lines, potentialPositionsForTiles, row, col + 1);
+                  removeVerticalTile(numbersOnBoard, potentialPositionsForTiles, row, col + 1);
                 }
                 // square to the left (if it exists)
                 if (valid(row, col - 1))
                 {
                   potentialDirections[row][col - 1].clearRight();
-                  removeHorizontalTile(lines, potentialPositionsForTiles, row, col - 1);
+                  removeHorizontalTile(numbersOnBoard, potentialPositionsForTiles, row, col - 1);
                 }
                 // square to the right (if it exists)
                 if (valid(row, col + 2))
                 {
                   potentialDirections[row][col + 2].clearLeft();
-                  removeHorizontalTile(lines, potentialPositionsForTiles, row, col + 1);
+                  removeHorizontalTile(numbersOnBoard, potentialPositionsForTiles, row, col + 1);
                 }
               }
               else if (coord.orientation == OrientationEnum.VERTICAL)
@@ -280,35 +280,35 @@ public class DominosaSolver
                 if (valid(row - 1, col))
                 {
                   potentialDirections[row - 1][col].clearDown();
-                  removeVerticalTile(lines, potentialPositionsForTiles, row - 1, col);
+                  removeVerticalTile(numbersOnBoard, potentialPositionsForTiles, row - 1, col);
                 }
                 // square below (if it exists)
                 if (valid(row + 2, col))
                 {
                   potentialDirections[row + 2][col].clearUp();
-                  removeVerticalTile(lines, potentialPositionsForTiles, row + 1, col);
+                  removeVerticalTile(numbersOnBoard, potentialPositionsForTiles, row + 1, col);
                 }
                 // squares to the left (if they exists)
                 if (valid(row, col - 1))
                 {
                   potentialDirections[row][col - 1].clearRight();
-                  removeHorizontalTile(lines, potentialPositionsForTiles, row, col - 1);
+                  removeHorizontalTile(numbersOnBoard, potentialPositionsForTiles, row, col - 1);
                 }
                 if (valid(row + 1, col - 1))
                 {
                   potentialDirections[row + 1][col - 1].clearRight();
-                  removeHorizontalTile(lines, potentialPositionsForTiles, row + 1, col - 1);
+                  removeHorizontalTile(numbersOnBoard, potentialPositionsForTiles, row + 1, col - 1);
                 }
                 // squares to the right (if they exists)
                 if (valid(row, col + 1))
                 {
                   potentialDirections[row][col + 1].clearLeft();
-                  removeHorizontalTile(lines, potentialPositionsForTiles, row, col);
+                  removeHorizontalTile(numbersOnBoard, potentialPositionsForTiles, row, col);
                 }
                 if (valid(row + 1, col + 1))
                 {
                   potentialDirections[row + 1][col + 1].clearLeft();
-                  removeHorizontalTile(lines, potentialPositionsForTiles, row + 1, col);
+                  removeHorizontalTile(numbersOnBoard, potentialPositionsForTiles, row + 1, col);
                 }
               }
             }
@@ -326,13 +326,13 @@ public class DominosaSolver
               potDir.done = true;
               changed = true;
               finalDirections[r][c] = potDir.oneDirection();
-              int thisNumber = lines[r][c];
+              int thisNumber = numbersOnBoard[r][c];
               int otherNumber = -1;
               int top = -1, left = -1;
               OrientationEnum dir = null;
               if (potDir.right)
               {
-                otherNumber = lines[r][c + 1];
+                otherNumber = numbersOnBoard[r][c + 1];
                 top = r;
                 left = c;
                 dir = OrientationEnum.HORIZONTAL;
@@ -340,7 +340,7 @@ public class DominosaSolver
               }
               if (potDir.left)
               {
-                otherNumber = lines[r][c - 1];
+                otherNumber = numbersOnBoard[r][c - 1];
                 top = r;
                 left = c - 1;
                 dir = OrientationEnum.HORIZONTAL;
@@ -348,7 +348,7 @@ public class DominosaSolver
               }
               if (potDir.up)
               {
-                otherNumber = lines[r - 1][c];
+                otherNumber = numbersOnBoard[r - 1][c];
                 top = r - 1;
                 left = c;
                 dir = OrientationEnum.VERTICAL;
@@ -356,7 +356,7 @@ public class DominosaSolver
               }
               if (potDir.down)
               {
-                otherNumber = lines[r + 1][c];
+                otherNumber = numbersOnBoard[r + 1][c];
                 top = r;
                 left = c;
                 dir = OrientationEnum.VERTICAL;
@@ -604,7 +604,7 @@ public class DominosaSolver
     return true;
   }
 
-  static int[] parse(String inputLine, InputMode mode, int length)
+  static int[] parse(String inputLine, InputModeEnum mode, int length)
   {
     int[] outputLine = new int[length];
     char c = ' ';
@@ -703,33 +703,9 @@ public class DominosaSolver
     else return "" + number;
   }
 
-  private static void printPotentialDirections(PotentialDirections[][] potentialDirections)
-  {
-    for (int i = 0; i < potentialDirections.length; i++)
-    {
-      System.out.println(PotentialDirections.printLine(potentialDirections[i]));
-    }
-  }
 
-  private static void printFinalDirections(char[][] finalDirections)
-  {
-    for (int i = 0; i < finalDirections.length; i++)
-    {
-      for (int j = 0; j < finalDirections[i].length; j++)
-      {
-          char c = finalDirections[i][j];
-        if (c != 'V' && c != '^' && c != '<' && c != '>')
-        {
-          System.out.print('?');
-        }
-        else
-        {
-          System.out.print(c);
-        }
-      }
-    }
 
-  }
+
 
   private static void removeHorizontalTile(int[][] matrix, PositionList[][] potentialPositionsForTiles, int r, int c) throws UnsolvableException
   {

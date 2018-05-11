@@ -6,6 +6,7 @@ public class PositionList implements Cloneable
   private LinkedList<Position> list = new LinkedList<>();
   public boolean done = false;
   
+  @SuppressWarnings("unchecked")
   @Override public PositionList clone()
   {
     PositionList p = new PositionList();
