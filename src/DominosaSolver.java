@@ -727,7 +727,6 @@ public class DominosaSolver
           System.out.print(c);
         }
       }
-      System.out.println();
     }
 
   }
