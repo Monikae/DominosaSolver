@@ -216,8 +216,6 @@ public class Board implements Cloneable {
 			potentialDirections[i][numColumns - 1].right = false;
 		}
 
-		PotentialDirections.printPotentialDirections(potentialDirections);
-
 		potentialPositionsForTiles = new PositionList[highestNumber + 1][highestNumber + 1];
 
 		for (int i = 0; i <= highestNumber; i++) {

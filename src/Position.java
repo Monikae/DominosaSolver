@@ -25,10 +25,10 @@ public class Position {
 			list.add(new Position(l.row, l.column, Orientation.HORIZONTAL));
 		}
 		for (Square b : getSquaresBelow()) {
-			list.add(new Position(this.row, b.column, Orientation.VERTICAL));
+			list.add(new Position(b.row - 1, b.column, Orientation.VERTICAL));
 		}
 		for (Square r : getSquaresRight()) {
-			list.add(new Position(r.row, this.column,
+			list.add(new Position(r.row, r.column - 1,
 					Orientation.HORIZONTAL));
 		}
 
