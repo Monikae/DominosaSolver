@@ -8,5 +8,5 @@ public class Square
   }
 
   int row, column;
-  
+
 }

@@ -72,8 +72,8 @@ public class DominosaSolver
     }
     else
     {
-      System.out
-          .print("If you want to put spaces between numbers enter s, if you want to enter numbers 10, 11, 12 etc. as a, b, c enter l, if you want to enter leading zeroes enter 0: s/l/0 > ");
+      System.out.print(
+          "If you want to put spaces between numbers enter s, if you want to enter numbers 10, 11, 12 etc. as a, b, c enter l, if you want to enter leading zeroes enter 0: s/l/0 > ");
       String spacesOrLetters = input.next();
       if ("s".equals(spacesOrLetters))
       {
@@ -126,7 +126,7 @@ public class DominosaSolver
   {
 
     Board board = Board.createInitialBoard(highestNumber, numRows, numColumns, numbersOnBoard);
-    
+
     SolveStatus solveStatus = board.seek();
 
     switch (solveStatus)
@@ -156,8 +156,7 @@ public class DominosaSolver
    */
   private static SolveStatus seek(PotentialDirections[][] potentialDirections, char[][] finalDirections, PositionList[][] potentialPositionsForTiles)
   {
-	  
-	  
+
     SolveStatus solveStatus = SolveStatus.INCOMPLETE;
 
     try
@@ -355,7 +354,7 @@ public class DominosaSolver
     {
       PotentialDirections[][] newPotentialDirections = new PotentialDirections[numRows][numColumns];
       char[][] newFinalDirections = new char[numRows][numColumns];
-      PositionList[][] newPotentialPositionsForTiles = new PositionList[highestNumber+1][highestNumber+1];
+      PositionList[][] newPotentialPositionsForTiles = new PositionList[highestNumber + 1][highestNumber + 1];
       copy(potentialDirections, newPotentialDirections, finalDirections, newFinalDirections, potentialPositionsForTiles, newPotentialPositionsForTiles);
 
       Guess guess = guess(newPotentialDirections, newFinalDirections, newPotentialPositionsForTiles);
@@ -379,7 +378,7 @@ public class DominosaSolver
       if (solveStatus == SolveStatus.CONFLICT)
       {
         // mark the guessed location as impossible - on the original!
-      //  guess.markGuessImpossible(potentialDirections);
+        //  guess.markGuessImpossible(potentialDirections);
       }
       return solveStatus; // CONFLICT or SOLVED
     }
@@ -402,9 +401,9 @@ public class DominosaSolver
    */
   private static Guess guess(PotentialDirections[][] newPotentialDirections, char[][] newFinalDirections, PositionList[][] newPotentialPositionsForTiles)
   {
-    PositionList positionListLength2 = null;    
+    PositionList positionListLength2 = null;
     PositionList lastPositionListLength3orMore = null;
-    out : for (int row = 0; row < newPotentialPositionsForTiles.length; row++)
+    out: for (int row = 0; row < newPotentialPositionsForTiles.length; row++)
     {
       for (int column = 0; column < newPotentialPositionsForTiles[row].length; column++)
       {
@@ -421,7 +420,7 @@ public class DominosaSolver
         }
         if (size >= 3)
         {
-          lastPositionListLength3orMore  = positionList;
+          lastPositionListLength3orMore = positionList;
         }
       }
     }
@@ -464,7 +463,7 @@ public class DominosaSolver
         newFinalDirections[i][j] = finalDirections[i][j];
       }
     }
-  
+
     for (int i = 0; i < potentialPositionsForTiles.length; i++)
     {
       for (int j = i; j < potentialPositionsForTiles[i].length; j++)
@@ -472,7 +471,7 @@ public class DominosaSolver
         newPotentialPositionsForTiles[i][j] = (PositionList) potentialPositionsForTiles[i][j].clone();
       }
     }
-    
+
   }
 
   private static SolveStatus isDone(PotentialDirections[][] potentialDirections, char[][] finalDirections, PositionList[][] potentialPositionsForTiles)
@@ -511,7 +510,7 @@ public class DominosaSolver
       }
     }
 
-    out : for (int i = 0; i < potentialPositionsForTiles.length; i++)
+    out: for (int i = 0; i < potentialPositionsForTiles.length; i++)
     {
       for (int j = i; j < potentialPositionsForTiles[i].length; j++)
       {
@@ -523,7 +522,7 @@ public class DominosaSolver
         {
           zeroPositionExists = true;
           break out;
-        }        
+        }
       }
     }
 
@@ -653,16 +652,12 @@ public class DominosaSolver
     else return "" + number;
   }
 
-
-
-
-
   private static void removeHorizontalTile(int[][] matrix, PositionList[][] potentialPositionsForTiles, int r, int c) throws UnsolvableException
   {
     int numberOnLeftTile = matrix[r][c];
     int numberOnRightTile = matrix[r][c + 1];
-    if (numberOnLeftTile <= numberOnRightTile) potentialPositionsForTiles[numberOnLeftTile][numberOnRightTile].remove(new Position(r, c,
-        Orientation.HORIZONTAL));
+    if (numberOnLeftTile <= numberOnRightTile)
+      potentialPositionsForTiles[numberOnLeftTile][numberOnRightTile].remove(new Position(r, c, Orientation.HORIZONTAL));
     else potentialPositionsForTiles[numberOnRightTile][numberOnLeftTile].remove(new Position(r, c, Orientation.HORIZONTAL));
   }
 
@@ -670,8 +665,7 @@ public class DominosaSolver
   {
     int numberOnTopTile = matrix[r][c];
     int numberOnBottomTile = matrix[r + 1][c];
-    if (numberOnTopTile <= numberOnBottomTile) potentialPositionsForTiles[numberOnTopTile][numberOnBottomTile].remove(new Position(r, c,
-        Orientation.VERTICAL));
+    if (numberOnTopTile <= numberOnBottomTile) potentialPositionsForTiles[numberOnTopTile][numberOnBottomTile].remove(new Position(r, c, Orientation.VERTICAL));
     else potentialPositionsForTiles[numberOnBottomTile][numberOnTopTile].remove(new Position(r, c, Orientation.VERTICAL));
   }
 

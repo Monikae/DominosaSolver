@@ -11,5 +11,4 @@ public class UnsolvableException extends Exception
     super(message);
   }
 
-
 }
