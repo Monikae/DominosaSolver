@@ -1,4 +1,3 @@
-import java.util.LinkedList;
 
 public class Board implements Cloneable
 {
@@ -41,60 +40,54 @@ public class Board implements Cloneable
             }
           }
         }
-      }
 
-      // squares that have only one potential direction
-      for (int r = 0; r < numRows; r++)
-      {
-        for (int c = 0; c < numColumns; c++)
+        // squares that have only one potential direction
+        for (int r = 0; r < numRows; r++)
         {
-          PotentialDirections potDir = potentialDirections[r][c];
-          if (potDir.done == false && potDir.hasOnlyOneDirection() == true)
+          for (int c = 0; c < numColumns; c++)
           {
-            potDir.done = true;
-            changed = true;
-            finalDirections[r][c] = potDir.oneDirection();
-            int thisNumber = numbersOnBoard[r][c];
-            int otherNumber = -1;
-            int top = -1, left = -1;
-            Orientation dir = null;
-            if (potDir.right)
+            PotentialDirections potDir = potentialDirections[r][c];
+            if (potDir.done == false && potDir.hasOnlyOneDirection() == true)
             {
-              otherNumber = numbersOnBoard[r][c + 1];
-              top = r;
-              left = c;
-              dir = Orientation.HORIZONTAL;
-              potentialDirections[r][c + 1].clearAllExceptLeft();
-            }
-            if (potDir.left)
-            {
-              otherNumber = numbersOnBoard[r][c - 1];
-              top = r;
-              left = c - 1;
-              dir = Orientation.HORIZONTAL;
-              potentialDirections[r][c - 1].clearAllExceptRight();
-            }
-            if (potDir.up)
-            {
-              otherNumber = numbersOnBoard[r - 1][c];
-              top = r - 1;
-              left = c;
-              dir = Orientation.VERTICAL;
-              potentialDirections[r - 1][c].clearAllExceptDown();
-            }
-            if (potDir.down)
-            {
-              otherNumber = numbersOnBoard[r + 1][c];
-              top = r;
-              left = c;
-              dir = Orientation.VERTICAL;
-              potentialDirections[r + 1][c].clearAllExceptUp();
-            }
-            setUniquePosition(thisNumber, otherNumber, new Position(top, left, dir));
+              potDir.done = true;
+              changed = true;
+              finalDirections[r][c] = potDir.oneDirection();
+              int top = -1, left = -1;
+              Orientation dir = null;
+              if (potDir.right)
+              {
+                top = r;
+                left = c;
+                dir = Orientation.HORIZONTAL;
+                potentialDirections[r][c + 1].clearAllExceptLeft();
+              }
+              if (potDir.left)
+              {
+                top = r;
+                left = c - 1;
+                dir = Orientation.HORIZONTAL;
+                potentialDirections[r][c - 1].clearAllExceptRight();
+              }
+              if (potDir.up)
+              {
+                top = r - 1;
+                left = c;
+                dir = Orientation.VERTICAL;
+                potentialDirections[r - 1][c].clearAllExceptDown();
+              }
+              if (potDir.down)
+              {
+                top = r;
+                left = c;
+                dir = Orientation.VERTICAL;
+                potentialDirections[r + 1][c].clearAllExceptUp();
+              }
+              setUniquePosition(new Position(top, left, dir));
 
+            }
           }
         }
-      }
+      } // while (changed == true)
 
       solveStatus = isDone();
     }
@@ -115,11 +108,20 @@ public class Board implements Cloneable
     {
       Board newBoard = this.clone();
 
-      Guess guess = newBoard.guess();
+      Position guess = newBoard.guess();
 
       if (guess == null)
       {
         return SolveStatus.CONFLICT;
+      }
+
+      try
+      {
+        newBoard.setUniquePosition(guess);
+      }
+      catch (UnsolvableException ex)
+      {
+        System.out.println("Doesn't happen (newBoard.setUniquePosition)");
       }
 
       solveStatus = newBoard.seek();
@@ -136,7 +138,14 @@ public class Board implements Cloneable
       if (solveStatus == SolveStatus.CONFLICT)
       {
         // mark the guessed location as impossible - on the original!
-        markGuessImpossible(guess);
+        try
+        {
+          removePotentialTile(guess);
+        }
+        catch (UnsolvableException ex)
+        {
+          System.out.println("Can't happen - marking guess impossible");
+        }
       }
       return solveStatus; // CONFLICT or SOLVED
     }
@@ -152,9 +161,9 @@ public class Board implements Cloneable
 
   /**
    * 
-   * @return whether it was possible to make a guess or not
+   * @return null if it was not possible to make a guess
    */
-  private Guess guess()
+  private Position guess()
   {
     PositionList positionListLength2 = null;
     PositionList lastPositionListLength3orMore = null;
@@ -193,39 +202,7 @@ public class Board implements Cloneable
     {
       return null;
     }
-    Guess guess = new Guess(position, potentialDirections, finalDirections);
-    return guess;
-  }
-
-  public void markGuessImpossible(Guess guess)
-  {
-    Position position = guess.getPosition();
-    try
-    {
-      potentialPositionsForTiles[position.getLowerNumber()][position.getHigherNumber()].remove(position);
-    }
-    catch (UnsolvableException e)
-    {
-      // doesn't happen
-    }
-
-    try
-    {
-      if (position.orientation == Orientation.HORIZONTAL)
-      {
-        potentialDirections[position.row][position.column].clearRight();
-        potentialDirections[position.secondRow()][position.secondColumn()].clearLeft();
-      }
-      else if (position.orientation == Orientation.VERTICAL)
-      {
-        potentialDirections[position.row][position.column].clearDown();
-        potentialDirections[position.secondRow()][position.secondColumn()].clearUp();
-      }
-    }
-    catch (UnsolvableException ex)
-    {
-      System.out.println("This shouldn't happen, when we mark a guess as impossible there can't be zero directions left in this location");
-    }
+    return position;
   }
 
   public static Board createInitialBoard(int highestNumber, int numRows, int numColumns, int[][] numbersOnBoard)
@@ -242,6 +219,13 @@ public class Board implements Cloneable
   private void initializeFirstBoard()
   {
     finalDirections = new char[numRows][numColumns];
+    for (int i = 0; i < finalDirections.length; i++)
+    {
+      for (int j = 0; j < finalDirections[i].length; j++)
+      {
+        finalDirections[i][j] = '?';
+      }
+    }
 
     potentialDirections = new PotentialDirections[numRows][numColumns];
     PotentialDirections.initialize(potentialDirections);
@@ -308,75 +292,40 @@ public class Board implements Cloneable
 
   public void removePotentialTile(Position position) throws UnsolvableException
   {
+    potentialPositionsForTiles[position.getSmallerNumber()][position.getBiggerNumber()].remove(position);
+    
+    PotentialDirections potDir1 = potentialDirections[position.row][position.column];
+    PotentialDirections potDir2 = potentialDirections[position.secondRow()][position.secondColumn()];
     if (position.orientation == Orientation.HORIZONTAL)
     {
-      removeHorizontalTile(position);
+      potDir1.clearRight();
+      potDir2.clearLeft();
     }
     else if (position.orientation == Orientation.VERTICAL)
     {
-      removeVerticalTile(position);
-    }
-  }
-
-  private void removeHorizontalTile(Position position) throws UnsolvableException
-  {
-    int r = position.row, c = position.column;
-    int numberOnLeftTile = numbersOnBoard[r][c];
-    int numberOnRightTile = numbersOnBoard[r][c + 1];
-    if (numberOnLeftTile <= numberOnRightTile)
-    {
-      potentialPositionsForTiles[numberOnLeftTile][numberOnRightTile].remove(position);
-    }
-    else
-    {
-      potentialPositionsForTiles[numberOnRightTile][numberOnLeftTile].remove(position);
-    }
-    potentialDirections[r][c].clearRight();
-    potentialDirections[r][c + 1].clearLeft();
-  }
-
-  public void removeVerticalTile(Position position) throws UnsolvableException
-  {
-    int r = position.row, c = position.column;
-    int numberOnTopTile = numbersOnBoard[r][c];
-    int numberOnBottomTile = numbersOnBoard[r + 1][c];
-    if (numberOnTopTile <= numberOnBottomTile)
-    {
-      potentialPositionsForTiles[numberOnTopTile][numberOnBottomTile].remove(position);
-    }
-    else
-    {
-      potentialPositionsForTiles[numberOnBottomTile][numberOnTopTile].remove(position);
-    }
-    potentialDirections[r][c].clearDown();
-    potentialDirections[r + 1][c].clearUp();
+      potDir1.clearDown();
+      potDir2.clearUp();
+    }    
   }
 
   /**
    * 
-   * @param firstNumber
-   * @param secondNumber
-   * @param row
-   * @param column
-   * @param orientation
+   * @param position
    * @return list of removed potential positions
    * @throws UnsolvableException
    */
-  public void setUniquePosition(int firstNumber, int secondNumber, Position uniquePosition) throws UnsolvableException
+  public void setUniquePosition(Position uniquePosition) throws UnsolvableException
   {
-    int smallerNumber = -1, biggerNumber = -1;
-    if (firstNumber <= secondNumber)
-    {
-      smallerNumber = firstNumber;
-      biggerNumber = secondNumber;
-    }
-    else
-    {
-      smallerNumber = secondNumber;
-      biggerNumber = firstNumber;
-    }
-
-    LinkedList<Position> removedPositions = potentialPositionsForTiles[smallerNumber][biggerNumber].setUniqueCoordinate(uniquePosition);
+    int smallerNumber = uniquePosition.getSmallerNumber();
+    int biggerNumber = uniquePosition.getBiggerNumber();
+    setUniquePosition(smallerNumber, biggerNumber, uniquePosition);
+  }
+  
+  public void setUniquePosition(int smallerNumber, int biggerNumber, Position uniquePosition) throws UnsolvableException
+  {  
+    assert smallerNumber < biggerNumber;
+    
+    Iterable<Position> removedPositions = potentialPositionsForTiles[smallerNumber][biggerNumber].setUniquePosition(uniquePosition);
 
     for (Position removedPosition : removedPositions)
     {
@@ -421,7 +370,7 @@ public class Board implements Cloneable
     Iterable<Position> overlappingPositions = uniquePosition.getOverlappingPositions();
     for (Position overlapPos : overlappingPositions)
     {
-      potentialPositionsForTiles[overlapPos.getLowerNumber()][overlapPos.getHigherNumber()].remove(overlapPos);
+      potentialPositionsForTiles[overlapPos.getSmallerNumber()][overlapPos.getBiggerNumber()].remove(overlapPos);
     }
   }
 
@@ -500,7 +449,6 @@ public class Board implements Cloneable
   @Override public Board clone()
   {
     Board b = new Board();
-    // numbersOnBoard isn't changed anyway, doesn't need to be cloned
 
     b.potentialDirections = new PotentialDirections[numRows][numColumns];
     b.finalDirections = new char[numRows][numColumns];

@@ -6,7 +6,7 @@ public class DominosaSolverTest
    */
   public static void main(String[] args)
   {
-    test3();
+    // test3();
     test4();
     // test20();
 

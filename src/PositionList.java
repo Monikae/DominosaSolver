@@ -45,7 +45,7 @@ public class PositionList implements Cloneable
     return list.getFirst();
   }
 
-  public LinkedList<Position> setUniqueCoordinate(Position position)
+  public Iterable<Position> setUniquePosition(Position position)
   {
     LinkedList<Position> oldList = list;
     oldList.remove(position);
@@ -54,6 +54,11 @@ public class PositionList implements Cloneable
     list.add(position);
 
     return oldList;
+  }
+
+  @Override public String toString()
+  {
+    return (done?"done: ":"not done: ")+list.toString();
   }
 
 }

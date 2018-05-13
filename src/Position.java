@@ -5,7 +5,7 @@ public class Position
   // coordinates of top/left field
   final int row, column;
 
-  Orientation orientation;
+  final Orientation orientation;
 
   @Override public String toString()
   {
@@ -42,13 +42,13 @@ public class Position
     return list;
   }
 
-  public int getLowerNumber()
+  public int getSmallerNumber()
   {
     if (getFirstNumber() <= getSecondNumber()) return getFirstNumber();
     return getSecondNumber();
   }
 
-  public int getHigherNumber()
+  public int getBiggerNumber()
   {
     if (getFirstNumber() <= getSecondNumber()) return getSecondNumber();
     return getFirstNumber();
@@ -141,7 +141,7 @@ public class Position
   public Square[] getSquaresLeft()
   {
     Square[] squares = new Square[0];
-    if (this.column == 0) return squares;
+    if (this.column == 0) return squares; // length 0
     if (orientation == Orientation.VERTICAL)
     {
       squares = new Square[2];
