@@ -25,10 +25,10 @@ public class PotentialDirections implements Cloneable
   @Override public String toString()
   {
     String ret = "";
-    ret += left ? '<' : ' ';
-    ret += up ? '^' : ' ';
-    ret += down ? 'V' : ' ';
-    ret += right ? '>' : ' ';
+    ret += left ? DirectionEnum.LEFT.value() : ' ';
+    ret += up ? DirectionEnum.UP.value() : ' ';
+    ret += down ? DirectionEnum.DOWN.value() : ' ';
+    ret += right ? DirectionEnum.RIGHT.value() : ' ';
     return ret;
   }
 
@@ -55,19 +55,13 @@ public class PotentialDirections implements Cloneable
   {
     for (int i = 0; i < finalDirections.length; i++)
     {
+      if (i<10) System.out.print(" ");
+      System.out.print(i+" ");
       for (int j = 0; j < finalDirections[i].length; j++)
       {
-        char c = finalDirections[i][j];
-        if (c != 'V' && c != '^' && c != '<' && c != '>')
-        {
-          System.out.print('?');
-        }
-        else
-        {
-          System.out.print(c);
-        }
+        System.out.print(finalDirections[i][j]);
       }
-      System.out.println();
+      System.out.println(" "+i);
     }
 
   }
@@ -88,21 +82,25 @@ public class PotentialDirections implements Cloneable
   public void clearAllExceptRight()
   {
     up = down = left = false;
+    done = true;
   }
 
   public void clearAllExceptLeft()
   {
     up = down = right = false;
+    done = true;
   }
 
   public void clearAllExceptDown()
   {
     up = left = right = false;
+    done = true;
   }
 
   public void clearAllExceptUp()
   {
     down = left = right = false;
+    done = true;
   }
 
   public void clearRight() throws UnsolvableException
@@ -141,10 +139,10 @@ public class PotentialDirections implements Cloneable
   public char oneDirection()
   {
     assert hasOnlyOneDirection();
-    if (left) return '<';
-    if (right) return '>';
-    if (up) return '^';
-    if (down) return 'V';
+    if (left) return DirectionEnum.LEFT.value();
+    if (right) return DirectionEnum.RIGHT.value();
+    if (up) return DirectionEnum.UP.value();
+    if (down) return DirectionEnum.DOWN.value();
     assert false;
     return ' ';
   }

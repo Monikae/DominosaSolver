@@ -10,15 +10,16 @@ public class Board implements Cloneable
   char[][] finalDirections;
 
   PositionList[][] potentialPositionsForTiles;
+  
+  static boolean printSteps; // print (some of) the steps so a human can follow
 
   /**
    * 
    * @return solved / incomplete / conflict
    */
-  public SolveStatus seek()
+  private SolveStatus seekUnique()
   {
     SolveStatus solveStatus = SolveStatus.INCOMPLETE;
-
     try
     {
       boolean changed = true;
@@ -33,6 +34,8 @@ public class Board implements Cloneable
           {
             if (potentialPositionsForTiles[i][j].hasExactlyOne() && potentialPositionsForTiles[i][j].done == false)
             {
+              if (printSteps)
+                System.out.print("Only one potential position: ");
               potentialPositionsForTiles[i][j].done = true;
               changed = true;
               Position position = potentialPositionsForTiles[i][j].getFirst();
@@ -49,9 +52,10 @@ public class Board implements Cloneable
             PotentialDirections potDir = potentialDirections[r][c];
             if (potDir.done == false && potDir.hasOnlyOneDirection() == true)
             {
+              if (printSteps)
+                System.out.print("Only one potential direction: ");              
               potDir.done = true;
               changed = true;
-              finalDirections[r][c] = potDir.oneDirection();
               int top = -1, left = -1;
               Orientation dir = null;
               if (potDir.right)
@@ -59,28 +63,24 @@ public class Board implements Cloneable
                 top = r;
                 left = c;
                 dir = Orientation.HORIZONTAL;
-                potentialDirections[r][c + 1].clearAllExceptLeft();
               }
               if (potDir.left)
               {
                 top = r;
                 left = c - 1;
                 dir = Orientation.HORIZONTAL;
-                potentialDirections[r][c - 1].clearAllExceptRight();
               }
               if (potDir.up)
               {
                 top = r - 1;
                 left = c;
                 dir = Orientation.VERTICAL;
-                potentialDirections[r - 1][c].clearAllExceptDown();
               }
               if (potDir.down)
               {
                 top = r;
                 left = c;
                 dir = Orientation.VERTICAL;
-                potentialDirections[r + 1][c].clearAllExceptUp();
               }
               setUniquePosition(new Position(top, left, dir));
 
@@ -95,72 +95,99 @@ public class Board implements Cloneable
     {
       solveStatus = SolveStatus.CONFLICT;
     }
-
-    // ///////////////////////////////////////
-
-    if (solveStatus == SolveStatus.SOLVED)
-    {
-      return SolveStatus.SOLVED;
-    }
-
-    // recursion
-    if (solveStatus == SolveStatus.INCOMPLETE)
-    {
-      Board newBoard = this.clone();
-
-      Position guess = newBoard.guess();
-
-      if (guess == null)
-      {
-        return SolveStatus.CONFLICT;
-      }
-
-      try
-      {
-        newBoard.setUniquePosition(guess);
-      }
-      catch (UnsolvableException ex)
-      {
-        System.out.println("Doesn't happen (newBoard.setUniquePosition)");
-      }
-
-      solveStatus = newBoard.seek();
-
-      if (solveStatus == SolveStatus.INCOMPLETE)
-      {
-        System.out.println("This shouldn't happen, after the recursion the status should either be solved or conflict, not incomplete.");
-      }
-      if (solveStatus == SolveStatus.SOLVED)
-      {
-        // accept the guess
-        applyState(newBoard);
-      }
-      if (solveStatus == SolveStatus.CONFLICT)
-      {
-        // mark the guessed location as impossible - on the original!
-        try
-        {
-          removePotentialTile(guess);
-        }
-        catch (UnsolvableException ex)
-        {
-          System.out.println("Can't happen - marking guess impossible");
-        }
-      }
-      return solveStatus; // CONFLICT or SOLVED
-    }
-
-    if (solveStatus == SolveStatus.CONFLICT)
-    {
-      return SolveStatus.CONFLICT;
-    }
-
-    // not actually reachable
     return solveStatus;
   }
 
   /**
    * 
+   * @return solved / incomplete / conflict
+   */
+  public SolveStatus seek()
+  {
+    SolveStatus seekUniqueSolveStatus = seekUnique();
+      
+    if (seekUniqueSolveStatus == SolveStatus.SOLVED)
+    {
+      return SolveStatus.SOLVED;
+    }
+
+    if (seekUniqueSolveStatus == SolveStatus.CONFLICT)
+    {
+      return SolveStatus.CONFLICT;
+    }
+
+    // recursion
+    if (seekUniqueSolveStatus == SolveStatus.INCOMPLETE)
+    {
+      Board newBoard = null;
+      SolveStatus clonedBoardSolveStatus = null;
+      SolveStatus seekUniqueSolveStatus2 = null;
+      while (true) // will be left with return
+      {
+        Position guess = guess(); // doesn't change the board
+
+        if (guess == null)
+        {
+          return SolveStatus.CONFLICT;
+        }
+
+        newBoard = this.clone();
+        if (printSteps)
+          System.out.print("--> Making a guess: ");
+        newBoard.applyGuess(guess); // like setUniquePosition() without exception
+        clonedBoardSolveStatus = newBoard.seek(); // recursion
+
+        assert (clonedBoardSolveStatus != SolveStatus.INCOMPLETE);
+
+        if (clonedBoardSolveStatus == SolveStatus.SOLVED)
+        {
+          // accept the guess
+          if(printSteps)
+            System.out.println("This guess worked.");
+          this.applyState(newBoard);
+          return SolveStatus.SOLVED;
+        }
+        if (clonedBoardSolveStatus == SolveStatus.CONFLICT)
+        {
+          if(printSteps)
+            System.out.println("<-- This guess didn't work.");
+          
+          // mark the guessed location as impossible - on the original!
+          this.markGuessAsImpossible(guess);
+
+          // maybe this made the position unique or the potential directions for a square
+          seekUniqueSolveStatus2 = this.seekUnique();
+          
+          switch (seekUniqueSolveStatus2)
+          {
+            case SOLVED: // the only alternative to the (failed) guess is the solution
+              return SolveStatus.SOLVED;
+            case CONFLICT: // the alternative to the (failed) guess doesn't work 
+              if(printSteps)
+                System.out.println("<-- This guess didn't work. The alternative didn't work either.");              
+              // => neither the guess nor the alternative to the guess work
+              // => this branch/recursion doesn't work at all 
+              // (no sense in trying to apply a different guess to this board)
+              return SolveStatus.CONFLICT;
+            case INCOMPLETE: // this (failed) guess helped us reduce the number of choices
+              if(printSteps)
+                System.out.println("<-- This guess didn't work, but helped us narrow down the possibilities.");                
+              // apply the next guess => go to beginning of loop (guess and clone again)
+              // == do nothing ==
+              break;
+          }
+
+        } // end if CONFLICT (for guess)
+      } // end while(true)
+    } // end if INCOMPLETE (after seekUnique())
+
+    // not actually reachable
+    assert false;
+    return seekUniqueSolveStatus;
+  }
+
+  /**
+   * doesn't change the board
    * @return null if it was not possible to make a guess
    */
   private Position guess()
@@ -290,10 +317,25 @@ public class Board implements Cloneable
     super();
   }
 
-  public void removePotentialTile(Position position) throws UnsolvableException
+  /**
+   * like removePotentialTile() without the exception
+   */
+  private void markGuessAsImpossible(Position guess)
+  {
+    try
+    {
+      removePotentialTile(guess);
+    }
+    catch (UnsolvableException ex)
+    {
+      assert false;
+    }
+  }
+
+  private void removePotentialTile(Position position) throws UnsolvableException
   {
     potentialPositionsForTiles[position.getSmallerNumber()][position.getBiggerNumber()].remove(position);
-    
+
     PotentialDirections potDir1 = potentialDirections[position.row][position.column];
     PotentialDirections potDir2 = potentialDirections[position.secondRow()][position.secondColumn()];
     if (position.orientation == Orientation.HORIZONTAL)
@@ -305,7 +347,23 @@ public class Board implements Cloneable
     {
       potDir1.clearDown();
       potDir2.clearUp();
-    }    
+    }
+  }
+
+  /**
+   * like setUniquePosition() but no exception possible
+   * @param guess
+   */
+  private void applyGuess(Position guess)
+  {
+    try
+    {
+      setUniquePosition(guess);
+    }
+    catch (UnsolvableException ex)
+    {
+      assert false;
+    }
   }
 
   /**
@@ -314,18 +372,23 @@ public class Board implements Cloneable
    * @return list of removed potential positions
    * @throws UnsolvableException
    */
-  public void setUniquePosition(Position uniquePosition) throws UnsolvableException
+  private void setUniquePosition(Position uniquePosition) throws UnsolvableException
   {
     int smallerNumber = uniquePosition.getSmallerNumber();
     int biggerNumber = uniquePosition.getBiggerNumber();
     setUniquePosition(smallerNumber, biggerNumber, uniquePosition);
   }
-  
-  public void setUniquePosition(int smallerNumber, int biggerNumber, Position uniquePosition) throws UnsolvableException
-  {  
-    assert smallerNumber < biggerNumber;
+
+  private void setUniquePosition(int smallerNumber, int biggerNumber, Position uniquePosition) throws UnsolvableException
+  {
+    if (printSteps) 
+      System.out.println("Placing tile ["+smallerNumber+" "+biggerNumber+"] at ("+uniquePosition.row+"/"+uniquePosition.column+") "+uniquePosition.orientation.getAdverb()+" (row/column) (counting from 0).");    
     
-    Iterable<Position> removedPositions = potentialPositionsForTiles[smallerNumber][biggerNumber].setUniquePosition(uniquePosition);
+    assert smallerNumber <= biggerNumber;
+
+    Iterable<Position> removedPositions
+      = potentialPositionsForTiles[smallerNumber][biggerNumber].setUniquePosition(uniquePosition);
+    potentialPositionsForTiles[smallerNumber][biggerNumber].done = true;
 
     for (Position removedPosition : removedPositions)
     {
@@ -335,42 +398,24 @@ public class Board implements Cloneable
     int row = uniquePosition.row, column = uniquePosition.column;
     if (uniquePosition.orientation == Orientation.HORIZONTAL)
     {
-      finalDirections[row][column] = '>';
-      finalDirections[row][column + 1] = '<';
+      finalDirections[row][column] = DirectionEnum.RIGHT.value();
+      finalDirections[row][column + 1] = DirectionEnum.LEFT.value();
       potentialDirections[row][column].clearAllExceptRight();
       potentialDirections[row][column + 1].clearAllExceptLeft();
     }
     else if (uniquePosition.orientation == Orientation.VERTICAL)
     {
-      finalDirections[row][column] = 'V';
-      finalDirections[row + 1][column] = '^';
+      finalDirections[row][column] = DirectionEnum.DOWN.value();
+      finalDirections[row + 1][column] = DirectionEnum.UP.value();
       potentialDirections[row][column].clearAllExceptDown();
       potentialDirections[row + 1][column].clearAllExceptUp();
     }
 
-    // neighbors
-    for (Square above : uniquePosition.getSquaresAbove())
-    {
-      potentialDirections[above.row][above.column].clearDown();
-    }
-    for (Square below : uniquePosition.getSquaresBelow())
-    {
-      potentialDirections[below.row][below.column].clearUp();
-    }
-    for (Square left : uniquePosition.getSquaresLeft())
-    {
-      potentialDirections[left.row][left.column].clearRight();
-    }
-    for (Square right : uniquePosition.getSquaresRight())
-    {
-      potentialDirections[right.row][right.column].clearLeft();
-    }
-
-    // overlapping positions
+    // directions in neighbors squares + overlapping positions
     Iterable<Position> overlappingPositions = uniquePosition.getOverlappingPositions();
     for (Position overlapPos : overlappingPositions)
     {
-      potentialPositionsForTiles[overlapPos.getSmallerNumber()][overlapPos.getBiggerNumber()].remove(overlapPos);
+      removePotentialTile(overlapPos);
     }
   }
 
@@ -403,7 +448,7 @@ public class Board implements Cloneable
     {
       for (char c : cs)
       {
-        if (c != '<' && c != '>' && c != '^' && c != 'V')
+        if (c == DirectionEnum.NOT_SET.value())
         {
           finalDirectionsSet = false;
         }
@@ -459,11 +504,11 @@ public class Board implements Cloneable
     return b;
   }
 
-  public void applyState(Board otherBoard)
+  private void applyState(Board otherBoard)
   {
-    copy(otherBoard.potentialDirections, this.potentialDirections, otherBoard.finalDirections, this.finalDirections, otherBoard.potentialPositionsForTiles,
-        this.potentialPositionsForTiles);
-
+    this.potentialDirections = otherBoard.potentialDirections;
+    this.finalDirections = otherBoard.finalDirections;
+    this.potentialPositionsForTiles = otherBoard.potentialPositionsForTiles;
   }
 
   private static void copy(PotentialDirections[][] potentialDirections, PotentialDirections[][] newPotentialDirections, char[][] finalDirections,

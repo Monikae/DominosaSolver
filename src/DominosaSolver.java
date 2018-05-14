@@ -62,6 +62,7 @@ public class DominosaSolver
     {
       System.out.println("This rectangle with " + numColumns + " columns " + " x " + numRows + "can fit " + numberOfTilesInGivenRectangle + "tiles,");
       System.out.println("but there are " + numberOfTilesForGivenHighestNumber + " different tiles with the numbers from 0 to " + highestNumber);
+      return;
     }
 
     InputModeEnum inputMode = InputModeEnum.DEFAULT;
@@ -116,14 +117,14 @@ public class DominosaSolver
 
     for (int i = 0; i < inputLines.length; i++)
     {
-      System.out.println(print(numbersOnBoard[i], false));
+      System.out.println(printInput(numbersOnBoard[i], false));
     }
 
   }
 
   static void processInput()
   {
-
+    Board.printSteps = true; 
     Board board = Board.createInitialBoard(highestNumber, numRows, numColumns, numbersOnBoard);
 
     SolveStatus solveStatus = board.seek();
@@ -137,16 +138,44 @@ public class DominosaSolver
         System.out.println("Final status is unsolvable.");
         break;
       case SOLVED:
-        System.out.println("Final status is solved.");
+        // System.out.println("Final status is solved."); // typically only solvable games are entered
         break;
       default:
         System.out.println("Final status is undefined - should not happen.");
     }
 
-    System.out.println("End - potential directions:");
-    PotentialDirections.printPotentialDirections(board.potentialDirections);
+    printPositionsForTiles(board.potentialPositionsForTiles, highestNumber);
+    int numTiles = (highestNumber+1) * (highestNumber+2) / 2;
+    if (numTiles % 3 != 0)
+      System.out.println(); // if not divisible by 3 - no line break at the end
+    
+    //  System.out.println("End - potential directions:");
+    //  PotentialDirections.printPotentialDirections(board.potentialDirections);
     System.out.println("End - final directions:");
     PotentialDirections.printFinalDirections(board.finalDirections);
+  }
+
+  static void printPositionsForTiles(PositionList[][] potentialPositionsForTiles, int highestNumber)
+  {
+    boolean l1 = (highestNumber >= 10); // => leading zeroes needed for tiles
+    boolean l2 = (highestNumber >= 8); // => columns >= 10 => leading zeroes needed for coordinates
+    int breakCounter = 0;
+
+    for (int i = 0; i <= highestNumber; i++)
+    {
+      for (int j = i; j <= highestNumber; j++)
+      {
+        Position pos = potentialPositionsForTiles[i][j].getFirst();
+        String num1 = leadingZeroes(i, l1);
+        String num2 = leadingZeroes(j, l1);
+        String row = leadingZeroes(pos.row, l2);
+        String column = leadingZeroes(pos.column, l2);
+        String orientation = pos.orientation.getSymbol();
+        System.out.print("Tile [" + num1 + " " + num2 + "] is at (" + row + "/" + column + ")" + orientation + " (row/column). ");
+        breakCounter++;
+        if (breakCounter % 3 == 0) System.out.println();
+      }
+    }
   }
 
   static int[] parse(String inputLine, InputModeEnum mode, int length)
@@ -231,7 +260,7 @@ public class DominosaSolver
 
   }
 
-  private static String print(int[] line, boolean leadingZeroes)
+  private static String printInput(int[] line, boolean leadingZeroes)
   {
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < line.length; i++)

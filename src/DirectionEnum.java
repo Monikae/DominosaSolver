@@ -1,7 +1,7 @@
 
 public enum DirectionEnum
 {
-  LEFT('<'), RIGHT('>'), UP('^'), DOWN('V');
+  LEFT('<'), RIGHT('>'), UP('^'), DOWN('v'), NOT_SET('?');
 
   private final char depiction;
 
