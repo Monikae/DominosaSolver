@@ -11,7 +11,8 @@ Prints the solution in the browser's debug console and returns the solution posi
 dominosa_solver namespace also gives the user access to another other object in the library. 
 
 ## Quick Start 
-Simply download solver.html, load it in the browser and enter the command below in the browser's debug console. 
+Simply download solver.html, load it in the browser and enter the command above
+in the browser's debug console. 
 
 ## Library 
 DominosaSolver.js and DominosaSolver.ts are compiled, standalone libraries that can be used in any JS or TS project. 
