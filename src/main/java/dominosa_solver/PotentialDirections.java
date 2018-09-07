@@ -1,4 +1,8 @@
-public class PotentialDirections implements Cloneable
+package dominosa_solver;
+
+import static def.dom.Globals.console;
+
+public class PotentialDirections 
 {
 
   boolean left = true;
@@ -10,16 +14,15 @@ public class PotentialDirections implements Cloneable
   boolean down = true;
 
   boolean done = false;
-
-  @Override public PotentialDirections clone()
-  {
-    PotentialDirections p = new PotentialDirections();
-    p.left = this.left;
-    p.right = this.right;
-    p.up = this.up;
-    p.down = this.down;
-    p.done = this.done;
-    return p;
+  
+  public PotentialDirections() {}
+  
+  public PotentialDirections(PotentialDirections p) {
+    this.left = p.left;
+    this.right = p.right;
+    this.up = p.up;
+    this.down = p.down;
+    this.done = p.done;
   }
 
   @Override public String toString()
@@ -36,7 +39,7 @@ public class PotentialDirections implements Cloneable
   {
     for (int i = 0; i < potentialDirections.length; i++)
     {
-      System.out.println(printLine(potentialDirections[i]));
+      console.log(printLine(potentialDirections[i]));
     }
   }
 
@@ -55,13 +58,15 @@ public class PotentialDirections implements Cloneable
   {
     for (int i = 0; i < finalDirections.length; i++)
     {
-      if (i<10) System.out.print(" ");
-      System.out.print(i+" ");
+      String line = "";
+      if (i<10) line += " ";
+      line += (i+" ");
       for (int j = 0; j < finalDirections[i].length; j++)
       {
-        System.out.print(finalDirections[i][j]);
+    	  line += String.valueOf(finalDirections[i][j]);
       }
-      System.out.println(" "+i);
+      line += (" "+i);
+      console.log(line);
     }
 
   }

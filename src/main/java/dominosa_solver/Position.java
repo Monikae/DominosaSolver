@@ -1,4 +1,5 @@
-import java.util.ArrayList;
+package dominosa_solver;
+
 
 public class Position
 {
@@ -19,24 +20,25 @@ public class Position
     this.orientation = orientation;
   }
 
-  public Iterable<Position> getOverlappingPositions()
+  public def.js.Array<Position> getOverlappingPositions()
   {
-    ArrayList<Position> list = new ArrayList<>();
+	def.js.Array<Position> list = new def.js.Array<>();
+    
     for (Square a : getSquaresAbove())
     {
-      list.add(new Position(a.row, a.column, Orientation.VERTICAL));
+      list.push(new Position(a.row, a.column, Orientation.VERTICAL));
     }
     for (Square l : getSquaresLeft())
     {
-      list.add(new Position(l.row, l.column, Orientation.HORIZONTAL));
+      list.push(new Position(l.row, l.column, Orientation.HORIZONTAL));
     }
     for (Square b : getSquaresBelow())
     {
-      list.add(new Position(b.row - 1, b.column, Orientation.VERTICAL));
+      list.push(new Position(b.row - 1, b.column, Orientation.VERTICAL));
     }
     for (Square r : getSquaresRight())
     {
-      list.add(new Position(r.row, r.column - 1, Orientation.HORIZONTAL));
+      list.push(new Position(r.row, r.column - 1, Orientation.HORIZONTAL));
     }
 
     return list;

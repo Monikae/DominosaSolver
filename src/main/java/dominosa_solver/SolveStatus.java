@@ -1,3 +1,4 @@
+package dominosa_solver;
 
 public enum SolveStatus
 {

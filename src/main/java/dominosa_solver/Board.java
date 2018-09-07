@@ -1,5 +1,7 @@
+package dominosa_solver;
+import static def.dom.Globals.console;
 
-public class Board implements Cloneable
+public class Board 
 {
   public static int numColumns, numRows, highestNumber;
 
@@ -12,7 +14,16 @@ public class Board implements Cloneable
   PositionList[][] potentialPositionsForTiles;
   
   static boolean printSteps; // print (some of) the steps so a human can follow
+  
+  public Board(Board b) {
 
+	    this.potentialDirections = new PotentialDirections[numRows][numColumns];
+	    this.finalDirections = new char[numRows][numColumns];
+	    this.potentialPositionsForTiles = new PositionList[highestNumber + 1][highestNumber + 1];
+
+	    copy(b.potentialDirections, this.potentialDirections, b.finalDirections, this.finalDirections, b.potentialPositionsForTiles,  this.potentialPositionsForTiles);
+	  
+  }
   /**
    * 
    * @return solved / incomplete / conflict
@@ -35,7 +46,7 @@ public class Board implements Cloneable
             if (potentialPositionsForTiles[i][j].hasExactlyOne() && potentialPositionsForTiles[i][j].done == false)
             {
               if (printSteps)
-                System.out.print("Only one potential position: ");
+            	  console.log("Only one potential position: ");
               potentialPositionsForTiles[i][j].done = true;
               changed = true;
               Position position = potentialPositionsForTiles[i][j].getFirst();
@@ -53,7 +64,7 @@ public class Board implements Cloneable
             if (potDir.done == false && potDir.hasOnlyOneDirection() == true)
             {
               if (printSteps)
-                System.out.print("Only one potential direction: ");              
+              console.log("Only one potential direction: ");              
               potDir.done = true;
               changed = true;
               int top = -1, left = -1;
@@ -131,9 +142,9 @@ public class Board implements Cloneable
           return SolveStatus.CONFLICT;
         }
 
-        newBoard = this.clone();
+        newBoard = new Board(this);
         if (printSteps)
-          System.out.print("--> Making a guess: ");
+        	console.log("--> Making a guess: ");
         newBoard.applyGuess(guess); // like setUniquePosition() without exception
         clonedBoardSolveStatus = newBoard.seek(); // recursion
 
@@ -386,7 +397,7 @@ public class Board implements Cloneable
     
     assert smallerNumber <= biggerNumber;
 
-    Iterable<Position> removedPositions
+    def.js.Array<Position> removedPositions
       = potentialPositionsForTiles[smallerNumber][biggerNumber].setUniquePosition(uniquePosition);
     potentialPositionsForTiles[smallerNumber][biggerNumber].done = true;
 
@@ -412,7 +423,7 @@ public class Board implements Cloneable
     }
 
     // directions in neighbors squares + overlapping positions
-    Iterable<Position> overlappingPositions = uniquePosition.getOverlappingPositions();
+    def.js.Array<Position> overlappingPositions = uniquePosition.getOverlappingPositions();
     for (Position overlapPos : overlappingPositions)
     {
       removePotentialTile(overlapPos);
@@ -491,19 +502,6 @@ public class Board implements Cloneable
     return returnStatus;
   }
 
-  @Override public Board clone()
-  {
-    Board b = new Board();
-
-    b.potentialDirections = new PotentialDirections[numRows][numColumns];
-    b.finalDirections = new char[numRows][numColumns];
-    b.potentialPositionsForTiles = new PositionList[highestNumber + 1][highestNumber + 1];
-
-    copy(potentialDirections, b.potentialDirections, finalDirections, b.finalDirections, potentialPositionsForTiles, b.potentialPositionsForTiles);
-
-    return b;
-  }
-
   private void applyState(Board otherBoard)
   {
     this.potentialDirections = otherBoard.potentialDirections;
@@ -524,7 +522,7 @@ public class Board implements Cloneable
       assert potentialDirections[i].length == newPotentialDirections[i].length;
       for (int j = 0; j < potentialDirections[i].length; j++)
       {
-        newPotentialDirections[i][j] = (PotentialDirections) potentialDirections[i][j].clone();
+        newPotentialDirections[i][j] = new PotentialDirections(potentialDirections[i][j]);
       }
     }
 
@@ -550,7 +548,7 @@ public class Board implements Cloneable
       assert potentialPositionsForTiles[i].length == newPotentialPositionsForTiles[i].length;
       for (int j = i; j < potentialPositionsForTiles[i].length; j++)
       {
-        newPotentialPositionsForTiles[i][j] = (PositionList) potentialPositionsForTiles[i][j].clone();
+        newPotentialPositionsForTiles[i][j] = new PositionList(potentialPositionsForTiles[i][j]) ;
       }
     }
 
